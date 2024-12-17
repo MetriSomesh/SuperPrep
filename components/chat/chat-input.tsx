@@ -2,10 +2,10 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Send, Paperclip, X } from "lucide-react";
+import { Send, Paperclip, X, FileText, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "../../hooks/use-toast";
 
 export function ChatInput({ chatId }: { chatId?: string }) {
   const [message, setMessage] = useState("");
@@ -51,8 +51,13 @@ export function ChatInput({ chatId }: { chatId?: string }) {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
-    const validFiles = selectedFiles.filter(file => {
-      const validTypes = ["image/png", "image/jpeg", "image/jpg", "application/pdf"];
+    const validFiles = selectedFiles.filter((file) => {
+      const validTypes = [
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/pdf",
+      ];
       return validTypes.includes(file.type);
     });
 
@@ -64,7 +69,12 @@ export function ChatInput({ chatId }: { chatId?: string }) {
       });
     }
 
-    setFiles(prev => [...prev, ...validFiles]);
+    setFiles((prev) => [...prev, ...validFiles]);
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type.startsWith("image/")) return <ImageIcon size={14} />;
+    return <FileText size={14} />;
   };
 
   return (
@@ -74,14 +84,16 @@ export function ChatInput({ chatId }: { chatId?: string }) {
           {files.map((file, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 bg-muted p-2 rounded-md"
+              className="flex items-center gap-2 bg-muted/50 p-2 rounded-md border border-border/50"
             >
+              {getFileIcon(file.type)}
               <span className="text-sm truncate max-w-[200px]">
                 {file.name}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
+                className="h-auto p-1"
                 onClick={() => setFiles(files.filter((_, i) => i !== index))}
               >
                 <X size={14} />
@@ -102,6 +114,7 @@ export function ChatInput({ chatId }: { chatId?: string }) {
         <Button
           variant="ghost"
           size="icon"
+          className="hover:bg-muted/50"
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
         >
@@ -110,8 +123,8 @@ export function ChatInput({ chatId }: { chatId?: string }) {
         <Textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1 min-h-[60px] max-h-[200px]"
+          placeholder="Type your message or upload study materials..."
+          className="flex-1 min-h-[60px] max-h-[200px] bg-muted/50"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -122,9 +135,13 @@ export function ChatInput({ chatId }: { chatId?: string }) {
         <Button
           onClick={handleSubmit}
           disabled={isLoading || (!message.trim() && files.length === 0)}
+          className="bg-primary/90 hover:bg-primary"
         >
           <Send />
         </Button>
+      </div>
+      <div className="text-xs text-muted-foreground text-center">
+        Press Enter to send, Shift + Enter for new line
       </div>
     </div>
   );
