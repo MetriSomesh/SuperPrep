@@ -16,4 +16,4 @@ declare module "next-auth" {
     email: string;
     image?: string;
   }
-}
+}// this doesn't work 
